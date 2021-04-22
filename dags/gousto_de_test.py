@@ -52,11 +52,13 @@ def data_unavailable(**kwargs):
     
 
 start = DummyOperator(
+    # Dummy start operator
     task_id='start',
     dag=dag
 )
 
 get_data = PythonOperator(
+    # Download data from http URL
     task_id = "get_data",
     python_callable = http_download_data,
     provide_context=True,
@@ -64,6 +66,7 @@ get_data = PythonOperator(
 )
 
 load_event_csv = GoogleCloudStorageToBigQueryOperator(
+    # Bigquery initail 'events' table createion on top of GCS bucket
     task_id='load_event_csv',
     bucket='europe-west1-gousto-exam-eff7d006-bucket',
     source_objects=['data/input_data/*'],
@@ -79,14 +82,16 @@ load_event_csv = GoogleCloudStorageToBigQueryOperator(
     write_disposition='WRITE_APPEND',
     dag=dag)
 
-set_date_to_daily_report = BigQueryOperator(#TODO add comments
+set_date_to_daily_report = BigQueryOperator(
+    # Adding initial entry as date for daily report numbers update
     task_id = "set_date_to_daily_report",
     sql = """ INSERT INTO gousto.daily_report (date_,entry_timestamp) VALUES ('{{ ds }}',CURRENT_TIMESTAMP()); """,
     dag = dag,
     use_legacy_sql = False,
 )
 
-active_user = BigQueryOperator( #TODO add comments
+active_user = BigQueryOperator( 
+    # Number of active users​ (users who visited our website on day X and day X-1)
     task_id = "active_user",
     sql = """
             CREATE TABLE gousto.active_users AS 
@@ -95,8 +100,6 @@ active_user = BigQueryOperator( #TODO add comments
             FROM gousto.events 
             WHERE DATE(timestamp_) >= '{{ macros.ds_add(ds, -1) }}'  
             AND   DATE(timestamp_) <= '{{ ds }}'
-            -- DATE(timestamp_) >= '2014-10-28'
-            -- AND DATE(timestamp_) <= '2014-10-29'
             AND user_fingerprint != '';
   
             UPDATE gousto.daily_report a SET active_user = (
@@ -107,7 +110,8 @@ active_user = BigQueryOperator( #TODO add comments
     use_legacy_sql = False,
 )
 
-inactive_user = BigQueryOperator(#TODO add comments
+inactive_user = BigQueryOperator(
+    # Number of inactive users (users who didn't visit our website on day X and neither on day X-1)
     task_id = "inactive_user",
     sql = """
             CREATE TABLE gousto.inactive_users AS 
@@ -126,7 +130,8 @@ inactive_user = BigQueryOperator(#TODO add comments
     use_legacy_sql = False,
 )
 
-churn_user = BigQueryOperator(#TODO add comments
+churn_user = BigQueryOperator(
+    # Number of churned users (users who visited our website on day X-1, but didn't visit on day X)
     task_id = "churn_user",
     sql = """
             CREATE TABLE gousto.churn_users AS
@@ -146,7 +151,8 @@ churn_user = BigQueryOperator(#TODO add comments
     use_legacy_sql = False,
 )
 
-reactive_users = BigQueryOperator(#TODO add comments
+reactive_users = BigQueryOperator(
+    # Number of reactivated users (users who visited our website on day X, but didn't visit on day X-1)
     task_id = "reactive_users",
     sql = """
             CREATE TABLE gousto.fisrt_active AS
@@ -178,6 +184,7 @@ reactive_users = BigQueryOperator(#TODO add comments
 )
 
 clean_bq_table = BigQueryOperator(
+    # Clean up of existing table for next run
     task_id = "clean_bq_table",
     sql = """
             DROP TABLE gousto.active_users;
@@ -190,13 +197,14 @@ clean_bq_table = BigQueryOperator(
     use_legacy_sql = False,
 )
 
-
 data_unavailable = PythonOperator(
+    # Sending Alert if data does not get downloaded
     task_id='data_unavailable',
     python_callable=data_unavailable,
     dag=dag )
 
 end = DummyOperator(
+    # Dummy end operator
     task_id='end',
     dag=dag
 )    
