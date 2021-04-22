@@ -27,10 +27,11 @@ Each event (record) has the following
 - page : Referer page path
 
 ## Git Folder Structure :
+```
 1. SQL
-    - bigquery.sql || ** SQL queries added for reference
+    - bigquery.sql [SQL queries added for reference]
 2. dags
-    - gousto_de_test.py || ** Airflow Dag file 
+    - gousto_de_test.py [Airflow Dag file]
 3. data/output_data
-    - Output of daily_report || Added for reference
-    
+    - Output of daily_report [Added for reference]
+```
