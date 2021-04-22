@@ -11,7 +11,7 @@ import os
 default_args = {
     'owner': 'Asmita More',
     'depends_on_past': False,
-    'start_date': datetime(2014,9,3), 
+    'start_date': datetime(2014,9,15), 
     'email': ['more.asmita11@gmail.com'],
     'email_on_failure': True,
     'email_on_retry': False,
@@ -21,7 +21,7 @@ default_args = {
 }
 
 dag = DAG(
-    'gousto_test_v6', 
+    'gousto_daily_report_v1', 
     default_args = default_args,
     description = 'Gousto Data Engineering Test',
     schedule_interval = '0 0 * * *',    
